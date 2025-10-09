@@ -3,29 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Community Service Hour Tracker</title>
+  <title>CSH Tracker - View Entries</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
-
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-md">
-    <h1 class="text-2xl font-bold mb-4 text-center">Community Service Hour Tracker</h1>
-
-    <!-- Form Section -->
-    <form id="entryForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <input type="text" id="studentName" placeholder="Student Name" required class="border p-2 rounded w-full">
-      <input type="number" id="hours" placeholder="Hours" min="0.5" step="0.5" required class="border p-2 rounded w-full">
-      <input type="date" id="date" required class="border p-2 rounded w-full">
-      <input type="text" id="reason" placeholder="Reason" required class="border p-2 rounded w-full">
-      <button type="submit" class="col-span-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Add Entry</button>
-    </form>
-
-    <!-- Search Section -->
-    <div class="mb-4">
-      <input type="text" id="searchInput" placeholder="Search by student name..." class="border p-2 rounded w-full">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Community Service Hour Records</h1>
+      <a href="add.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Entry</a>
     </div>
 
-    <!-- Results Table -->
+    <input type="text" id="searchInput" placeholder="Search by student name..." class="border p-2 rounded w-full mb-4">
+
     <div class="overflow-x-auto">
       <table class="w-full border border-gray-300 text-sm">
         <thead class="bg-gray-200">
@@ -42,16 +31,10 @@
   </div>
 
   <script>
-    const form = document.getElementById("entryForm");
     const entriesTable = document.getElementById("entriesTable");
     const searchInput = document.getElementById("searchInput");
 
-    // Load entries from localStorage
     let entries = JSON.parse(localStorage.getItem("cshEntries")) || [];
-
-    function saveEntries() {
-      localStorage.setItem("cshEntries", JSON.stringify(entries));
-    }
 
     function renderEntries(filter = "") {
       entriesTable.innerHTML = "";
@@ -68,26 +51,8 @@
       });
     }
 
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      const newEntry = {
-        studentName: document.getElementById("studentName").value,
-        hours: parseFloat(document.getElementById("hours").value),
-        date: document.getElementById("date").value,
-        reason: document.getElementById("reason").value
-      };
-      entries.push(newEntry);
-      saveEntries();
-      renderEntries();
-      form.reset();
-    });
-
-    searchInput.addEventListener("input", e => {
-      renderEntries(e.target.value);
-    });
-
+    searchInput.addEventListener("input", e => renderEntries(e.target.value));
     renderEntries();
   </script>
-
 </body>
 </html>
