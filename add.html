@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add CSH Entry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Add Community Service Entry</h1>
+      <a href="index.html" class="text-blue-600 underline">← Back to Records</a>
+    </div>
 
+    <form id="entryForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <input type="text" id="studentName" placeholder="Student Name" required class="border p-2 rounded w-full">
+      <input type="number" id="hours" placeholder="Hours" min="0.5" step="0.5" required class="border p-2 rounded w-full">
+      <input type="date" id="date" required class="border p-2 rounded w-full">
+      <input type="text" id="reason" placeholder="Reason" required class="border p-2 rounded w-full">
+      <button type="submit" class="col-span-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Add Entry</button>
+    </form>
+
+    <p id="message" class="text-green-600 font-medium"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById("entryForm");
+    const message = document.getElementById("message");
+    let entries = JSON.parse(localStorage.getItem("cshEntries")) || [];
+
+    function saveEntries() {
+      localStorage.setItem("cshEntries", JSON.stringify(entries));
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const newEntry = {
+        studentName: document.getElementById("studentName").value,
+        hours: parseFloat(document.getElementById("hours").value),
+        date: document.getElementById("date").value,
+        reason: document.getElementById("reason").value
+      };
+      entries.push(newEntry);
+      saveEntries();
+      form.reset();
+      message.textContent = "✅ Entry added successfully!";
+      setTimeout(() => message.textContent = "", 2000);
+    });
+  </script>
+</body>
+</html>
