@@ -1,58 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSH Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSH Tracker - Profiles</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">Community Service Hour Records</h1>
-      <a href="add.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Entry</a>
-    </div>
-
-    <input type="text" id="searchInput" placeholder="Search by student name..." class="border p-2 rounded w-full mb-4">
-
-    <div class="overflow-x-auto">
-      <table class="w-full border border-gray-300 text-sm">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border p-2">Student Name</th>
-            <th class="border p-2">Hours</th>
-            <th class="border p-2">Date</th>
-            <th class="border p-2">Reason</th>
-          </tr>
-        </thead>
-        <tbody id="entriesTable"></tbody>
-      </table>
-    </div>
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold">Student Profiles</h1>
+    <a href="add-profile.html" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Add Profile</a>
   </div>
 
-  <script>
-    const entriesTable = document.getElementById("entriesTable");
-    const searchInput = document.getElementById("searchInput");
+  <input type="text" id="searchInput" placeholder="Search by student name..." class="border p-2 rounded w-full mb-4">
 
-    let entries = JSON.parse(localStorage.getItem("cshEntries")) || [];
+  <div class="overflow-x-auto">
+    <table class="w-full border border-gray-300 text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="border p-2">Name</th>
+          <th class="border p-2">Grade</th>
+          <th class="border p-2">Total CSH Hours</th>
+          <th class="border p-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="profilesTable"></tbody>
+    </table>
+  </div>
+</div>
 
-    function renderEntries(filter = "") {
-      entriesTable.innerHTML = "";
-      const filtered = entries.filter(e => e.studentName.toLowerCase().includes(filter.toLowerCase()));
-      filtered.forEach(entry => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="border p-2">${entry.studentName}</td>
-          <td class="border p-2">${entry.hours}</td>
-          <td class="border p-2">${entry.date}</td>
-          <td class="border p-2">${entry.reason}</td>
-        `;
-        entriesTable.appendChild(row);
-      });
-    }
+<script>
+const API_URL = "YOUR_WEB_APP_URL_HERE";
+const API_KEY = "YOUR_SECRET_KEY";
 
-    searchInput.addEventListener("input", e => renderEntries(e.target.value));
-    renderEntries();
-  </script>
+let students = [];
+let cshEntries = [];
+
+async function fetchStudents() {
+  const res = await fetch(`${API_URL}?sheet=Students`);
+  students = await res.json();
+}
+
+async function fetchCSH() {
+  const res = await fetch(`${API_URL}?sheet=CSH`);
+  cshEntries = await res.json();
+}
+
+function calculateTotalHours(studentId) {
+  return cshEntries
+    .filter(entry => entry.studentId === studentId)
+    .reduce((sum, e) => sum + parseFloat(e.hours), 0);
+}
+
+function renderProfiles(filter="") {
+  const table = document.getElementById("profilesTable");
+  table.innerHTML = "";
+  const filtered = students.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
+  filtered.forEach(student => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="border p-2">${student.name}</td>
+      <td class="border p-2">${student.grade}</td>
+      <td class="border p-2">${calculateTotalHours(student.id)}</td>
+      <td class="border p-2">
+        <a href="edit-profile.html?id=${student.id}" class="text-blue-600 underline">Edit / Add CSH</a>
+      </td>
+    `;
+    table.appendChild(row);
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input", e => renderProfiles(e.target.value));
+
+async function init() {
+  await fetchStudents();
+  await fetchCSH();
+  renderProfiles();
+}
+
+init();
+</script>
 </body>
 </html>
