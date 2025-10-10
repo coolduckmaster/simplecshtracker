@@ -10,7 +10,7 @@
 <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
   <div class="flex justify-between items-center mb-4">
     <h1 class="text-2xl font-bold">Student Profiles</h1>
-    <a href="add.html" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Add Profile</a>
+    <a href="add-profile.html" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Add Profile</a>
   </div>
 
   <input type="text" id="searchInput" placeholder="Search by student name..." class="border p-2 rounded w-full mb-4">
@@ -64,7 +64,7 @@ function renderProfiles(filter="") {
       <td class="border p-2">${student.grade}</td>
       <td class="border p-2">${calculateTotalHours(student.id)}</td>
       <td class="border p-2">
-        <a href="edit.html?id=${student.id}" class="text-blue-600 underline">Edit / Add CSH</a>
+        <a href="edit-profile.html?id=${student.id}" class="text-blue-600 underline">Edit / Add CSH</a>
       </td>
     `;
     table.appendChild(row);
