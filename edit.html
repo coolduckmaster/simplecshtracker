@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Student Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+  <a href="index.html" class="text-blue-600 underline mb-4 inline-block">← Back to Profiles</a>
+  <h1 class="text-2xl font-bold mb-4" id="studentNameTitle"></h1>
+
+  <!-- Add CSH Entry Form -->
+  <form id="cshForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <input type="number" id="hours" placeholder="Hours" min="0.5" step="0.5" required class="border p-2 rounded w-full">
+    <input type="date" id="date" required class="border p-2 rounded w-full">
+    <input type="text" id="reason" placeholder="Reason" required class="border p-2 rounded w-full">
+    <button type="submit" class="col-span-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Add CSH Entry</button>
+  </form>
+
+  <!-- CSH Entries Table -->
+  <h2 class="text-xl font-bold mb-2">CSH Entries</h2>
+  <table class="w-full border border-gray-300 text-sm">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="border p-2">Hours</th>
+        <th class="border p-2">Date</th>
+        <th class="border p-2">Reason</th>
+      </tr>
+    </thead>
+    <tbody id="cshTable"></tbody>
+  </table>
+</div>
+
+<script>
+const API_URL = "YOUR_WEB_APP_URL_HERE";
+const API_KEY = "YOUR_SECRET_KEY";
+
+// Get student ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const studentId = urlParams.get("id");
+
+let students = [];
+let cshEntries = [];
+let currentStudent = null;
+
+// Fetch all students
+async function fetchStudents() {
+  const res = await fetch(`${API_URL}?sheet=Students`);
+  students = await res.json();
+  currentStudent = students.find(s => s.id === studentId);
+  if (currentStudent) {
+    document.getElementById("studentNameTitle").textContent = currentStudent.name;
+  } else {
+    document.getElementById("studentNameTitle").textContent = "Student not found";
+  }
+}
+
+// Fetch all CSH entries
+async function fetchCSH() {
+  const res = await fetch(`${API_URL}?sheet=CSH`);
+  cshEntries = await res.json();
+}
+
+// Render CSH entries for this student
+function renderCSH() {
+  const table = document.getElementById("cshTable");
+  table.innerHTML = "";
+  const entries = cshEntries.filter(e => e.studentId === studentId);
+  entries.forEach(entry => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="border p-2">${entry.hours}</td>
+      <td class="border p-2">${entry.date}</td>
+      <td class="border p-2">${entry.reason}</td>
+    `;
+    table.appendChild(row);
+  });
+}
+
+// Add new CSH entry
+document.getElementById("cshForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const hours = document.getElementById("hours").value;
+  const date = document.getElementById("date").value;
+  const reason = document.getElementById("reason").value;
+
+  const entry = { studentId, hours, date, reason, key: API_KEY };
+  await fetch(`${API_URL}?sheet=CSH`, {
+    method: "POST",
+    body: JSON.stringify(entry),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  // Clear form
+  e.target.reset();
+
+  // Reload CSH entries
+  await fetchCSH();
+  renderCSH();
+});
+
+// Initialize page
+async function init() {
+  await fetchStudents();
+  await fetchCSH();
+  renderCSH();
+}
+
+init();
+</script>
+</body>
+</html>
