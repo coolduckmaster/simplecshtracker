@@ -1,5 +1,5 @@
 // Replace with your deployed Google Apps Script URL
-const SHEET_API = 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE';
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec';
 
 // Elements
 const addForm = document.getElementById('add-form');
