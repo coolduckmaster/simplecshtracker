@@ -1,8 +1,27 @@
-const SHEET_API = 'https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec';
+// Replace with your deployed Google Apps Script URL
+const SHEET_API = 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE';
 
+// Elements
+const addForm = document.getElementById('add-form');
+const editForm = document.getElementById('edit-form');
+const cancelEditBtn = document.getElementById('cancel-edit');
+const refreshBtn = document.getElementById('refresh-btn');
 const tableBody = document.querySelector('#students-table tbody');
-const form = document.querySelector('#student-form');
 
+// Tab Switching
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tabContents.forEach(tab => tab.classList.remove('active'));
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// Load Data
 async function loadStudents() {
   const res = await fetch(SHEET_API);
   const data = await res.json();
@@ -23,6 +42,32 @@ async function loadStudents() {
   });
 }
 
+// Refresh Button
+refreshBtn.addEventListener('click', async () => {
+  refreshBtn.textContent = '⏳ Refreshing...';
+  await loadStudents();
+  refreshBtn.textContent = '🔄 Refresh';
+});
+
+// Add Student
+addForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    action: 'add',
+    name: document.getElementById('add-name').value,
+    grade: document.getElementById('add-grade').value,
+    hours: document.getElementById('add-hours').value,
+    notes: document.getElementById('add-notes').value
+  };
+  await fetch(SHEET_API, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  addForm.reset();
+  loadStudents();
+});
+
+// Delete Student
 async function deleteStudent(id) {
   await fetch(SHEET_API, {
     method: 'POST',
@@ -31,35 +76,46 @@ async function deleteStudent(id) {
   loadStudents();
 }
 
+// Edit Student
 async function editStudent(id) {
   const res = await fetch(SHEET_API);
   const data = await res.json();
   const s = data.find(stu => stu.id == id);
-  document.querySelector('#student-id').value = s.id;
-  document.querySelector('#name').value = s.name;
-  document.querySelector('#grade').value = s.grade;
-  document.querySelector('#hours').value = s.hours;
-  document.querySelector('#notes').value = s.notes;
+  if (!s) return;
+
+  document.getElementById('edit-id').value = s.id;
+  document.getElementById('edit-name').value = s.name;
+  document.getElementById('edit-grade').value = s.grade;
+  document.getElementById('edit-hours').value = s.hours;
+  document.getElementById('edit-notes').value = s.notes;
+
+  editForm.classList.remove('hidden');
+  document.querySelector('#tab-manage').scrollIntoView({ behavior: 'smooth' });
 }
 
-form.addEventListener('submit', async (e) => {
+// Update Student
+editForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const id = document.querySelector('#student-id').value;
-  const name = document.querySelector('#name').value;
-  const grade = document.querySelector('#grade').value;
-  const hours = document.querySelector('#hours').value;
-  const notes = document.querySelector('#notes').value;
-
-  const action = id ? 'update' : 'add';
-  const payload = { action, id, name, grade, hours, notes };
-
+  const payload = {
+    action: 'update',
+    id: document.getElementById('edit-id').value,
+    name: document.getElementById('edit-name').value,
+    grade: document.getElementById('edit-grade').value,
+    hours: document.getElementById('edit-hours').value,
+    notes: document.getElementById('edit-notes').value
+  };
   await fetch(SHEET_API, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload)
   });
-
-  form.reset();
+  editForm.classList.add('hidden');
   loadStudents();
 });
 
+// Cancel Edit
+cancelEditBtn.addEventListener('click', () => {
+  editForm.classList.add('hidden');
+});
+
 loadStudents();
+
