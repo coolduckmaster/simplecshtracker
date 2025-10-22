@@ -9,28 +9,55 @@
 <body>
   <div class="container">
     <h1>Community Service Hours Tracker</h1>
-    
-    <form id="student-form">
-      <input type="hidden" id="student-id" />
-      <input type="text" id="name" placeholder="Student Name" required />
-      <input type="text" id="grade" placeholder="Grade" required />
-      <input type="number" id="hours" placeholder="Hours" required />
-      <input type="text" id="notes" placeholder="Notes" />
-      <button type="submit">Save</button>
-    </form>
 
-    <table id="students-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Grade</th>
-          <th>Hours</th>
-          <th>Notes</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-button active" data-tab="add">Add Profile</button>
+      <button class="tab-button" data-tab="manage">Manage Profiles</button>
+    </div>
+
+    <!-- Add Profile Tab -->
+    <div class="tab-content active" id="tab-add">
+      <form id="add-form">
+        <input type="text" id="add-name" placeholder="Student Name" required />
+        <input type="text" id="add-grade" placeholder="Grade" required />
+        <input type="number" id="add-hours" placeholder="Hours" required />
+        <input type="text" id="add-notes" placeholder="Notes" />
+        <button type="submit">Add Student</button>
+      </form>
+    </div>
+
+    <!-- Manage Profiles Tab -->
+    <div class="tab-content" id="tab-manage">
+      <div class="manage-header">
+        <h2>Profiles</h2>
+        <button id="refresh-btn">🔄 Refresh</button>
+      </div>
+
+      <table id="students-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Grade</th>
+            <th>Hours</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <form id="edit-form" class="hidden">
+        <h2>Edit Profile</h2>
+        <input type="hidden" id="edit-id" />
+        <input type="text" id="edit-name" placeholder="Student Name" required />
+        <input type="text" id="edit-grade" placeholder="Grade" required />
+        <input type="number" id="edit-hours" placeholder="Hours" required />
+        <input type="text" id="edit-notes" placeholder="Notes" />
+        <button type="submit">Update</button>
+        <button type="button" id="cancel-edit">Cancel</button>
+      </form>
+    </div>
   </div>
 
   <script src="script.js"></script>
