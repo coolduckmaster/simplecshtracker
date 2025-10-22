@@ -1,1 +1,28 @@
+/* Custom styles to complement Tailwind */
+
+/* Log rows indent */
+#tableBody td.pl-10 {
+  padding-left: 2.5rem; /* indents log items */
+}
+
+/* Small text for log date */
+.log-date {
+  font-size: 0.75rem;
+  color: #6b7280; /* Tailwind gray-500 */
+}
+
+/* Hover effect on table row */
+tbody.group tr:hover {
+  background-color: #f9fafb; /* Tailwind gray-50 */
+}
+
+/* Collapse/expand logs row */
+tr.hidden {
+  display: none;
+}
+
+/* Adjust padding for log rows */
+tbody.group tr td {
+  padding: 0.25rem 0.5rem;
+}
 
