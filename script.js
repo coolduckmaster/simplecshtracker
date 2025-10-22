@@ -1,4 +1,4 @@
-const API_URL = "YOUR_WEB_APP_URL_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec";
 const tableBody = document.getElementById("tableBody");
 const form = document.getElementById("studentForm");
 const search = document.getElementById("search");
