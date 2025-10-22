@@ -9,7 +9,7 @@ body {
 
 .container {
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
@@ -21,9 +21,46 @@ h1 {
   margin-bottom: 1.5rem;
 }
 
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-button.active {
+  background: #2563eb;
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.manage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
@@ -46,9 +83,19 @@ button:hover {
   background: #1d4ed8;
 }
 
+#refresh-btn {
+  background: #10b981;
+  font-size: 0.9rem;
+}
+
+#refresh-btn:hover {
+  background: #059669;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1.5rem;
 }
 
 th, td {
@@ -59,4 +106,8 @@ th, td {
 
 tr:hover {
   background: #f3f4f6;
+}
+
+.hidden {
+  display: none;
 }
