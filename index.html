@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Service Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">Community Service Tracker</h1>
+
+    <!-- Add/Edit Form -->
+    <div class="bg-white p-4 rounded shadow mb-6">
+      <h2 class="text-xl font-semibold mb-2">Add / Edit Student</h2>
+      <form id="studentForm" class="grid grid-cols-2 gap-4">
+        <input type="hidden" id="studentId" />
+        <input id="name" placeholder="Name" class="border p-2 rounded" required />
+        <input id="grade" placeholder="Grade" class="border p-2 rounded" required />
+        <textarea id="reason" placeholder="CSH Reason" class="col-span-2 border p-2 rounded"></textarea>
+        <input id="hours" placeholder="Hours" type="number" min="0" class="border p-2 rounded col-span-2" />
+        <button class="bg-blue-500 text-white rounded p-2 col-span-2 hover:bg-blue-600" type="submit">Save</button>
+      </form>
+    </div>
+
+    <!-- Search + Refresh -->
+    <div class="flex justify-between items-center mb-4">
+      <input id="search" placeholder="Search by name..." class="border p-2 rounded w-3/4" />
+      <button id="refresh" class="bg-green-500 text-white rounded p-2 hover:bg-green-600">Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full bg-white shadow rounded">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="p-2 text-left">Name</th>
+            <th class="p-2 text-left">Grade</th>
+            <th class="p-2 text-left">Total Hours</th>
+            <th class="p-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
 
