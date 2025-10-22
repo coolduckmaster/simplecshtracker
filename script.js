@@ -1,92 +1,115 @@
 // script.js
 
 // === CONFIG ===
-const API_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
-const API_KEY = "CHANGE_THIS_TO_SAME_KEY_AS_SCRIPT";
+const API_URL = "https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec"; // Example: https://script.google.com/macros/s/AKfycbx.../exec
 
-// === GENERIC FUNCTIONS ===
+// === API FUNCTIONS ===
 
-// Fetch all data from a sheet
-async function fetchSheet(sheetName) {
-  const res = await fetch(`${API_URL}?sheet=${sheetName}&key=${API_KEY}`);
+// Get all student data
+async function getAllStudents() {
+  const res = await fetch(API_URL);
   return res.json();
 }
 
-// Add a student profile
-async function addStudent(name, grade) {
-  const res = await fetch(`${API_URL}?sheet=Students&name=${encodeURIComponent(name)}&grade=${encodeURIComponent(grade)}&key=${API_KEY}`);
-  return res.json();
-}
-
-// Add a CSH record
-async function addCSH(studentId, hours, date, reason) {
-  const res = await fetch(`${API_URL}?sheet=CSH&studentId=${encodeURIComponent(studentId)}&hours=${encodeURIComponent(hours)}&date=${encodeURIComponent(date)}&reason=${encodeURIComponent(reason)}&key=${API_KEY}`);
-  return res.json();
-}
-
-// === PAGE-SPECIFIC LOGIC ===
-
-// For index.html (search)
-function setupSearchPage() {
-  const searchBtn = document.getElementById("searchBtn");
-  if (!searchBtn) return; // Exit if we're not on the search page
-
-  searchBtn.addEventListener("click", async () => {
-    const name = document.getElementById("searchName").value.toLowerCase();
-    const data = await fetchSheet("Students");
-
-    const results = data.filter(s => s.Name.toLowerCase().includes(name));
-    const ul = document.getElementById("results");
-    ul.innerHTML = "";
-    results.forEach(r => ul.innerHTML += `<li>${r.Name} (Grade: ${r.Grade})</li>`);
+// Add a new student
+async function addStudent(name, grade, hours, notes) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "add", name, grade, hours, notes }),
+    headers: { "Content-Type": "application/json" },
   });
+  return res.text();
 }
 
-// For add-profile.html
-function setupAddProfilePage() {
-  const form = document.getElementById("profileForm");
-  if (!form) return;
+// Update a student
+async function updateStudent(id, name, grade, hours, notes) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "update", id, name, grade, hours, notes }),
+    headers: { "Content-Type": "application/json" },
+  });
+  return res.text();
+}
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("name").value;
-    const grade = document.getElementById("grade").value;
+// Delete a student
+async function deleteStudent(id) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "delete", id }),
+    headers: { "Content-Type": "application/json" },
+  });
+  return res.text();
+}
 
-    const result = await addStudent(name, grade);
-    if (result.success) {
-      alert("Profile added!");
+// === PAGE LOGIC ===
+document.addEventListener("DOMContentLoaded", async () => {
+  if (document.getElementById("studentTable")) {
+    const students = await getAllStudents();
+    const table = document.getElementById("studentTable");
+    table.innerHTML = `
+      <tr><th>ID</th><th>Name</th><th>Grade</th><th>Hours</th><th>Notes</th><th>Actions</th></tr>
+    `;
+    students.forEach(s => {
+      table.innerHTML += `
+        <tr>
+          <td>${s.id}</td>
+          <td>${s.name}</td>
+          <td>${s.grade}</td>
+          <td>${s.hours}</td>
+          <td>${s.notes}</td>
+          <td>
+            <a href="edit-profile.html?id=${s.id}">Edit</a>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  const form = document.getElementById("addForm");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const grade = document.getElementById("grade").value;
+      const hours = document.getElementById("hours").value;
+      const notes = document.getElementById("notes").value;
+      const result = await addStudent(name, grade, hours, notes);
+      alert(result);
       window.location.href = "index.html";
-    } else {
-      alert("Error: " + (result.error || "Unknown"));
+    });
+  }
+
+  const editForm = document.getElementById("editForm");
+  if (editForm) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
+    const students = await getAllStudents();
+    const student = students.find(s => s.id == id);
+    if (student) {
+      document.getElementById("name").value = student.name;
+      document.getElementById("grade").value = student.grade;
+      document.getElementById("hours").value = student.hours;
+      document.getElementById("notes").value = student.notes;
     }
-  });
-}
 
-// For add-csh.html
-function setupAddCSHPage() {
-  const form = document.getElementById("cshForm");
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const studentId = document.getElementById("studentId").value;
-    const hours = document.getElementById("hours").value;
-    const date = document.getElementById("date").value;
-    const reason = document.getElementById("reason").value;
-
-    const result = await addCSH(studentId, hours, date, reason);
-    if (result.success) {
-      alert("CSH entry added!");
+    editForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const grade = document.getElementById("grade").value;
+      const hours = document.getElementById("hours").value;
+      const notes = document.getElementById("notes").value;
+      const result = await updateStudent(id, name, grade, hours, notes);
+      alert(result);
       window.location.href = "index.html";
-    } else {
-      alert("Error: " + (result.error || "Unknown"));
-    }
-  });
-}
+    });
 
-// === Initialize appropriate page ===
-document.addEventListener("DOMContentLoaded", () => {
-  setupSearchPage();
-  setupAddProfilePage();
-  setupAddCSHPage();
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this record?")) {
+        const result = await deleteStudent(id);
+        alert(result);
+        window.location.href = "index.html";
+      }
+    });
+  }
 });
+
