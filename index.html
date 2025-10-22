@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student CSH Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Community Service Hours Tracker</h1>
+    
+    <form id="student-form">
+      <input type="hidden" id="student-id" />
+      <input type="text" id="name" placeholder="Student Name" required />
+      <input type="text" id="grade" placeholder="Grade" required />
+      <input type="number" id="hours" placeholder="Hours" required />
+      <input type="text" id="notes" placeholder="Notes" />
+      <button type="submit">Save</button>
+    </form>
+
+    <table id="students-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Grade</th>
+          <th>Hours</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
 
