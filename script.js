@@ -1,14 +1,21 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec"; 
 
 // ---------- Fetch Students ----------
 async function fetchStudents() {
   const res = await fetch(API_URL);
   const data = await res.json();
-  return data;
+  return data.map(s => ({
+    ID: s.ID,
+    Name: s.Name || "",
+    Grade: s.Grade || "",
+    Logs: s.Logs ? JSON.parse(s.Logs) : [],
+    TotalHours: parseFloat(s.TotalHours) || 0
+  }));
 }
 
 // ---------- Add Student ----------
 async function addStudent(student) {
+  student.action = "add";
   const res = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify(student)
@@ -18,6 +25,7 @@ async function addStudent(student) {
 
 // ---------- Update Student ----------
 async function updateStudent(student) {
+  student.action = "update";
   const res = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify(student)
@@ -29,8 +37,8 @@ async function updateStudent(student) {
 async function deleteStudent(id) {
   if (!confirm("Are you sure you want to delete this student?")) return;
   const res = await fetch(API_URL, {
-    method: "DELETE",
-    body: JSON.stringify({ id })
+    method: "POST",
+    body: JSON.stringify({ action: "delete", id })
   });
   alert("Student deleted!");
   loadStudents();
@@ -40,14 +48,14 @@ async function deleteStudent(id) {
 // ---------- Render Table ----------
 function renderTable(students) {
   const tbody = document.getElementById("tableBody");
-  if(!tbody) return; // for add/edit pages
+  if (!tbody) return;
   tbody.innerHTML = "";
   students.forEach(s => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="p-2">${s.Name}</td>
       <td class="p-2">${s.Grade}</td>
-      <td class="p-2">${s.TotalHours || 0}</td>
+      <td class="p-2">${s.TotalHours}</td>
       <td class="p-2 space-x-2">
         <a href="edit.html?id=${s.ID}" class="text-blue-500 hover:underline">Edit</a>
         <button onclick="deleteStudent('${s.ID}')" class="text-red-500 hover:underline">Delete</button>
@@ -66,23 +74,23 @@ async function loadStudents() {
 // ---------- Add Page Form Handling ----------
 function initAddForm() {
   const addForm = document.getElementById("addForm");
-  if(!addForm) return;
+  if (!addForm) return;
 
   addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const grade = document.getElementById("grade").value.trim();
+    const reason = document.getElementById("reason").value.trim();
+    const hours = parseFloat(document.getElementById("hours").value) || 0;
+
     const student = {
-      name: document.getElementById("name").value,
-      grade: document.getElementById("grade").value,
-      logs: []
+      Name: name,
+      Grade: grade,
+      Logs: reason ? [{ reason, hours, date: new Date().toISOString() }] : [],
+      TotalHours: reason ? hours : 0
     };
-    const reason = document.getElementById("reason").value;
-    const hours = parseFloat(document.getElementById("hours").value);
-    if(reason && hours) {
-      student.logs.push({ reason, hours, date: new Date().toISOString() });
-      student.totalHours = hours;
-    } else {
-      student.totalHours = 0;
-    }
+
     await addStudent(student);
     alert("Student added!");
     window.location.href = "index.html";
@@ -92,7 +100,7 @@ function initAddForm() {
 // ---------- Edit Page Form Handling ----------
 function initEditForm() {
   const editForm = document.getElementById("editForm");
-  if(!editForm) return;
+  if (!editForm) return;
 
   const urlParams = new URLSearchParams(window.location.search);
   const studentId = urlParams.get("id");
@@ -100,29 +108,35 @@ function initEditForm() {
   async function loadStudent() {
     const students = await fetchStudents();
     const student = students.find(s => s.ID == studentId);
-    if(!student) return alert("Student not found");
+    if (!student) return alert("Student not found");
 
     document.getElementById("studentId").value = student.ID;
     document.getElementById("name").value = student.Name;
     document.getElementById("grade").value = student.Grade;
+    if (student.Logs.length > 0) {
+      document.getElementById("reason").value = student.Logs[0].reason;
+      document.getElementById("hours").value = student.Logs[0].hours;
+    }
   }
 
   loadStudent();
 
   editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const grade = document.getElementById("grade").value.trim();
+    const reason = document.getElementById("reason").value.trim();
+    const hours = parseFloat(document.getElementById("hours").value) || 0;
+
     const student = {
       id: studentId,
-      name: document.getElementById("name").value,
-      grade: document.getElementById("grade").value,
-      logs: []
+      Name: name,
+      Grade: grade,
+      Logs: reason ? [{ reason, hours, date: new Date().toISOString() }] : [],
+      TotalHours: reason ? hours : 0
     };
-    const reason = document.getElementById("reason").value;
-    const hours = parseFloat(document.getElementById("hours").value);
-    if(reason && hours) {
-      student.logs.push({ reason, hours, date: new Date().toISOString() });
-      student.totalHours = hours;
-    }
+
     await updateStudent(student);
     alert("Student updated!");
     window.location.href = "index.html";
@@ -136,12 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initEditForm();
 
   const refreshBtn = document.getElementById("refresh");
-  if(refreshBtn) {
+  if (refreshBtn) {
     refreshBtn.addEventListener("click", loadStudents);
   }
 
   const searchInput = document.getElementById("search");
-  if(searchInput) {
+  if (searchInput) {
     searchInput.addEventListener("input", async (e) => {
       const query = e.target.value.toLowerCase();
       const students = await fetchStudents();
