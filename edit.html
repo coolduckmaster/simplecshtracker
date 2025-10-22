@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Student</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">Edit Student</h1>
+
+    <form id="editForm" class="grid grid-cols-1 gap-4">
+      <input type="hidden" id="studentId" />
+      <input id="name" placeholder="Name" class="border p-2 rounded" required />
+      <input id="grade" placeholder="Grade" class="border p-2 rounded" required />
+      <textarea id="reason" placeholder="CSH Reason" class="border p-2 rounded"></textarea>
+      <input id="hours" placeholder="Hours" type="number" min="0" class="border p-2 rounded" />
+      <button class="bg-green-500 text-white rounded p-2 hover:bg-green-600" type="submit">Save Changes</button>
+      <a href="index.html" class="text-center text-gray-600 hover:underline">Back to List</a>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
