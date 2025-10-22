@@ -1,96 +1,152 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwLkKSDk1z0bV5T33rI8CkLAGj5CZX_wtfaWnQVe6puV4eFl6hDvoqN5ymOtqV2VX4g/exec";
-const tableBody = document.getElementById("tableBody");
-const form = document.getElementById("studentForm");
-const search = document.getElementById("search");
-const refresh = document.getElementById("refresh");
 
+// ---------- Fetch Students ----------
 async function fetchStudents() {
   const res = await fetch(API_URL);
   const data = await res.json();
-  renderTable(data);
+  return data;
 }
 
-function renderTable(data) {
-  const filter = search.value.toLowerCase();
-  const filtered = data.filter(s => s.Name.toLowerCase().includes(filter));
-  tableBody.innerHTML = filtered.map(s => {
-    const logs = Array.isArray(s["Logs (JSON)"]) ? s["Logs (JSON)"] : [];
-    const logRows = logs.length
-      ? logs.map(l => `
-          <tr class="border-t text-sm text-gray-700">
-            <td colspan="4" class="px-6 py-1 pl-10">
-              • <strong>${l.reason}</strong> — ${l.hours} hr(s) <span class="text-gray-500 text-xs">(${new Date(l.date).toLocaleDateString()})</span>
-            </td>
-          </tr>`).join('')
-      : `<tr><td colspan="4" class="px-6 py-1 pl-10 text-sm text-gray-500">No logs</td></tr>`;
-    
-    return `
-      <tbody class="group border-b">
-        <tr class="hover:bg-gray-50 transition">
-          <td class="p-2">${s.Name}</td>
-          <td class="p-2">${s.Grade}</td>
-          <td class="p-2">${s.TotalHours}</td>
-          <td class="p-2 flex gap-2">
-            <button onclick='toggleLogs("${s.ID}")' class="bg-gray-400 text-white px-2 py-1 rounded">Logs</button>
-            <button onclick='editStudent(${JSON.stringify(s)})' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
-            <button onclick='deleteStudent("${s.ID}")' class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
-          </td>
-        </tr>
-        <tr id="logs-${s.ID}" class="hidden bg-gray-50">
-          <td colspan="4" class="p-0">${logRows}</td>
-        </tr>
-      </tbody>`;
-  }).join('');
-}
-
-function toggleLogs(id) {
-  const row = document.getElementById(`logs-${id}`);
-  row.classList.toggle("hidden");
-}
-
-async function addOrUpdateStudent(e) {
-  e.preventDefault();
-  const id = document.getElementById("studentId").value;
-  const name = document.getElementById("name").value;
-  const grade = document.getElementById("grade").value;
-  const reason = document.getElementById("reason").value;
-  const hours = parseFloat(document.getElementById("hours").value) || 0;
-
-  const student = {
-    id, name, grade,
-    totalHours: hours,
-    logs: reason ? [{ reason, hours, date: new Date().toISOString() }] : []
-  };
-
-  const method = id ? "PUT" : "POST";
-  await fetch(API_URL, {
-    method,
+// ---------- Add Student ----------
+async function addStudent(student) {
+  const res = await fetch(API_URL, {
+    method: "POST",
     body: JSON.stringify(student)
   });
-
-  form.reset();
-  fetchStudents();
+  return res.json();
 }
 
+// ---------- Update Student ----------
+async function updateStudent(student) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(student)
+  });
+  return res.json();
+}
+
+// ---------- Delete Student ----------
 async function deleteStudent(id) {
-  if (!confirm("Delete this student?")) return;
-  await fetch(API_URL, {
+  if (!confirm("Are you sure you want to delete this student?")) return;
+  const res = await fetch(API_URL, {
     method: "DELETE",
     body: JSON.stringify({ id })
   });
-  fetchStudents();
+  alert("Student deleted!");
+  loadStudents();
+  return res.json();
 }
 
-function editStudent(s) {
-  document.getElementById("studentId").value = s.ID;
-  document.getElementById("name").value = s.Name;
-  document.getElementById("grade").value = s.Grade;
-  document.getElementById("hours").value = s.TotalHours;
+// ---------- Render Table ----------
+function renderTable(students) {
+  const tbody = document.getElementById("tableBody");
+  if(!tbody) return; // for add/edit pages
+  tbody.innerHTML = "";
+  students.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="p-2">${s.Name}</td>
+      <td class="p-2">${s.Grade}</td>
+      <td class="p-2">${s.TotalHours || 0}</td>
+      <td class="p-2 space-x-2">
+        <a href="edit.html?id=${s.ID}" class="text-blue-500 hover:underline">Edit</a>
+        <button onclick="deleteStudent('${s.ID}')" class="text-red-500 hover:underline">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
-form.addEventListener("submit", addOrUpdateStudent);
-refresh.addEventListener("click", fetchStudents);
-search.addEventListener("input", fetchStudents);
+// ---------- Load Students for Index Page ----------
+async function loadStudents() {
+  const students = await fetchStudents();
+  renderTable(students);
+}
 
-fetchStudents();
+// ---------- Add Page Form Handling ----------
+function initAddForm() {
+  const addForm = document.getElementById("addForm");
+  if(!addForm) return;
 
+  addForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const student = {
+      name: document.getElementById("name").value,
+      grade: document.getElementById("grade").value,
+      logs: []
+    };
+    const reason = document.getElementById("reason").value;
+    const hours = parseFloat(document.getElementById("hours").value);
+    if(reason && hours) {
+      student.logs.push({ reason, hours, date: new Date().toISOString() });
+      student.totalHours = hours;
+    } else {
+      student.totalHours = 0;
+    }
+    await addStudent(student);
+    alert("Student added!");
+    window.location.href = "index.html";
+  });
+}
+
+// ---------- Edit Page Form Handling ----------
+function initEditForm() {
+  const editForm = document.getElementById("editForm");
+  if(!editForm) return;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const studentId = urlParams.get("id");
+
+  async function loadStudent() {
+    const students = await fetchStudents();
+    const student = students.find(s => s.ID == studentId);
+    if(!student) return alert("Student not found");
+
+    document.getElementById("studentId").value = student.ID;
+    document.getElementById("name").value = student.Name;
+    document.getElementById("grade").value = student.Grade;
+  }
+
+  loadStudent();
+
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const student = {
+      id: studentId,
+      name: document.getElementById("name").value,
+      grade: document.getElementById("grade").value,
+      logs: []
+    };
+    const reason = document.getElementById("reason").value;
+    const hours = parseFloat(document.getElementById("hours").value);
+    if(reason && hours) {
+      student.logs.push({ reason, hours, date: new Date().toISOString() });
+      student.totalHours = hours;
+    }
+    await updateStudent(student);
+    alert("Student updated!");
+    window.location.href = "index.html";
+  });
+}
+
+// ---------- Initialize everything ----------
+document.addEventListener("DOMContentLoaded", () => {
+  loadStudents();
+  initAddForm();
+  initEditForm();
+
+  const refreshBtn = document.getElementById("refresh");
+  if(refreshBtn) {
+    refreshBtn.addEventListener("click", loadStudents);
+  }
+
+  const searchInput = document.getElementById("search");
+  if(searchInput) {
+    searchInput.addEventListener("input", async (e) => {
+      const query = e.target.value.toLowerCase();
+      const students = await fetchStudents();
+      const filtered = students.filter(s => s.Name.toLowerCase().includes(query));
+      renderTable(filtered);
+    });
+  }
+});
